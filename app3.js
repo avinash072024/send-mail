@@ -1,21 +1,29 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
-require('dotenv').config();
 const cors = require('cors');
-
+require('dotenv').config();
 
 const app = express();
-app.use(bodyParser.json());
+
+/* =========================
+   CORS – ALLOW ALL
+========================= */
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
 }));
 
-// 1. Create a Transporter (The connection to your email service)
+app.use(bodyParser.json());
+
+/* =========================
+   MAIL TRANSPORTER
+========================= */
+// 👉 Gmail
+
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    shost: 'smtp.gmail.com',
     port: 465,
     secure: true, // Use SSL
     auth: {
@@ -27,31 +35,30 @@ const transporter = nodemailer.createTransport({
         rejectUnauthorized: false
     }
 });
+
+// 👉 Outlook / Hotmail
 // const transporter = nodemailer.createTransport({
 //     host: 'smtp.office365.com',
 //     port: 587,
-//     secure: false, // TLS
+//     secure: false,
 //     auth: {
 //         user: process.env.EMAIL_USER,
 //         pass: process.env.EMAIL_PASS
-//     },
-//     tls: {
-//         ciphers: 'SSLv3'
 //     }
 // });
 
-
-// 2. Define the Send Mail Route
-app.post('/api/contact', async (req, res) => {
+/* =========================
+   SEND MAIL API
+========================= */
+app.post('/api/send-mail', async (req, res) => {
     const { name, email, subject, message } = req.body;
 
-    // Basic validation
-    if (!name) {
-        return res.status(400).json({ success: false, message: 'Please provide name.' });
-    } else if (!email) {
-        return res.status(400).json({ success: false, message: 'Please provide mail.' });
-    } else if (!message) {
-        return res.status(400).json({ success: false, message: 'Please provide message.' });
+    // Validation
+    if (!name || !email || !message) {
+        return res.status(400).json({
+            success: false,
+            message: 'Name, email, and message are required'
+        });
     }
 
     const mailOptions = {
@@ -91,12 +98,19 @@ app.post('/api/contact', async (req, res) => {
         </div>`
     }
 
-    // transporter.sendMail(mailOptions, (error, info) => {
-    //     if (error) {
-    //         return res.status(500).json({ success: false, message: error.message });
-    //     }
-    //     res.status(200).json({ success: true, message: 'Message sent successfully!' });
-    // });
+    // try {
+    //     await transporter.sendMail(mailOptions);
+    //     res.status(200).json({
+    //         success: true,
+    //         message: 'Email sent successfully'
+    //     });
+    // } catch (error) {
+    //     console.error(error);
+    //     res.status(500).json({
+    //         success: false,
+    //         message: 'Email sending failed'
+    //     });
+    // }
 
     try {
         const info = await transporter.sendMail(mailOptions);
@@ -112,17 +126,13 @@ app.post('/api/contact', async (req, res) => {
             message: error.message
         });
     }
+
 });
 
-
-app.get('/', (req, res) => {
-    res.json({
-        success: "get Api", message: 'Message sent successfully!'
-
-    });
-});
-
-const PORT = process.env.PORT || 3000;
+/* =========================
+   START SERVER
+========================= */
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
