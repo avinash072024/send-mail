@@ -22,27 +22,15 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    tls: {
-        // This prevents failure on unauthorized certificates (helpful for local testing)
-        rejectUnauthorized: false
-    }
+    // tls: {
+    //     // This prevents failure on unauthorized certificates (helpful for local testing)
+    //     rejectUnauthorized: false
+    // }
 });
-// const transporter = nodemailer.createTransport({
-//     host: 'smtp.office365.com',
-//     port: 587,
-//     secure: false, // TLS
-//     auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASS
-//     },
-//     tls: {
-//         ciphers: 'SSLv3'
-//     }
-// });
-
 
 // 2. Define the Send Mail Route
 app.post('/api/contact', async (req, res) => {
+    debugger;
     const { name, email, subject, message } = req.body;
 
     // Basic validation
@@ -99,6 +87,15 @@ app.post('/api/contact', async (req, res) => {
     // });
 
     try {
+        transporter.verify((error, success) => {
+            if (error) {
+                console.error('SMTP ERROR:', error);
+            } else {
+                console.log('SMTP READY');
+            }
+        });
+
+
         const info = await transporter.sendMail(mailOptions);
 
         res.status(200).json({
