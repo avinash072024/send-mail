@@ -79,6 +79,13 @@ app.post('/api/contact', (req, res) => {
     });
 });
 
+app.get('/', (req, res) => {
+    res.json({
+        success: "get Api", message: 'Message sent successfully!'
+
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
