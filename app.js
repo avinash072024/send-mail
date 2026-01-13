@@ -2,24 +2,46 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+const cors = require('cors');
+
+const cors = require('cors');
+
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 const app = express();
 app.use(bodyParser.json());
 
 // 1. Create a Transporter (The connection to your email service)
+// const transporter = nodemailer.createTransport({
+//     host: 'smtp.gmail.com',
+//     port: 465,
+//     secure: true, // Use SSL
+//     auth: {
+//         user: process.env.EMAIL_USER,
+//         pass: process.env.EMAIL_PASS
+//     },
+//     tls: {
+//         // This prevents failure on unauthorized certificates (helpful for local testing)
+//         rejectUnauthorized: false
+//     }
+// });
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL
+    host: 'smtp.office365.com',
+    port: 587,
+    secure: false, // TLS
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
     tls: {
-        // This prevents failure on unauthorized certificates (helpful for local testing)
-        rejectUnauthorized: false
+        ciphers: 'SSLv3'
     }
 });
+
 
 // 2. Define the Send Mail Route
 // app.post('/api/contact', (req, res) => {
